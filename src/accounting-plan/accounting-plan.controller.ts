@@ -1,41 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { AccountingPlanService } from './accounting-plan.service';
-import { CreateAccountingPlanDto } from './dto/create-accounting-plan.dto';
-import { UpdateAccountingPlanDto } from './dto/update-accounting-plan.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateAccountDto } from './dto/create-accounting-plan.dto';
+import { UpdateAccountDto } from './dto/update-accounting-plan.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { AccountingPlan } from './entities/accounting-plan.entity';
 
-@ApiTags('accounting')
-@Controller('accounting-plan')
+@ApiTags('accounts')
+@Controller('accounts')
 export class AccountingPlanController {
   constructor(private readonly accountingPlanService: AccountingPlanService) {}
 
-  @Post()
-  async createAccount(@Body() createAccountDto: CreateAccountingPlanDto): Promise<AccountingPlan> {
-    return this.accountingPlanService.createAccount(createAccountDto);
-  }
-
   @Get()
-  async getAccountTree(): Promise<AccountingPlan[]> {
-    return this.accountingPlanService.getAccountTree();
+  @ApiResponse({ status: 200, description: 'Get all accounts successfully.' })
+  async findAll(): Promise<AccountingPlan[]> {
+    return this.accountingPlanService.findAll();
   }
 
-  @Get(':id')
-  async getAccount(@Param('id') id: number): Promise<AccountingPlan> {
-    return this.accountingPlanService.getAccountById(id);
+  @Post()
+  @ApiResponse({ status: 201, description: 'Account created successfully.' })
+  @ApiResponse({ status: 400, description: 'Validation failed.' })
+  @ApiResponse({ status: 409, description: 'Account with this code already exists.' })
+  async create(@Body() createAccountDto: CreateAccountDto): Promise<AccountingPlan> {
+    return this.accountingPlanService.create(createAccountDto);
   }
 
-  @Put(':id')
-  async updateAccount(
-    @Param('id') id: number,
-    @Body() updateAccountDto: UpdateAccountingPlanDto
-  ): Promise<AccountingPlan> {
-    return this.accountingPlanService.updateAccount(id, updateAccountDto);
-  }
+  // @Get(':id')
+  // async findOne(@Param('id') id: number) {
+  //   return this.accountingPlanService.findOne(id);
+  // }
 
-  @Delete(':id')
-  async deleteAccount(@Param('id') id: number): Promise<boolean> {
-    return this.accountingPlanService.deleteAccount(id);
-  } 
+  // @Put(':id')
+  // @ApiResponse({ status: 200, description: 'Account updated successfully.' })
+  // @ApiResponse({ status: 404, description: 'Account not found.' })
+  // @ApiResponse({ status: 400, description: 'Validation failed.' })
+  // @ApiResponse({ status: 409, description: 'Account with this code already exists.' })
+  // async update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
+  //   const updatedAccount = await this.accountingPlanService.update(id, updateAccountDto);
+  //   if (!updatedAccount) {
+  //     throw new NotFoundException(`Account with ID ${id} not found.`);
+  //   }
+  //   return updatedAccount;
+  // }
+
+  // @Delete(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // @ApiResponse({ status: 204, description: 'Account deleted successfully.' })
+  // @ApiResponse({ status: 404, description: 'Account not found.' })
+  // async delete(@Param('id') id: number) {
+  //   return this.accountingPlanService.delete(id);
+  // }
+
 }
 

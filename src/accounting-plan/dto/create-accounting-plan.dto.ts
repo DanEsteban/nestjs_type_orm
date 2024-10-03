@@ -1,15 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsOptional, IsString, Length, Matches, MinLength } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsNumber, IsOptional, IsString, Matches } from "class-validator";
 
-export class CreateAccountingPlanDto {
+export class CreateAccountDto {
 
      @ApiProperty({
-          description: 'The code of accounting plan',
-          example: '1',
+          description: 'The code of the accounting plan',
+          example: '1., 1.1, 1.1.1., etc',
      })
      @IsString()
-     @Matches(/^[0-9.]+$/, { message: 'El código debe contener solo números y puntos' })
-     @Length(1, 20, { message: 'El código debe tener entre 1 y 20 caracteres' })
+     @Matches(/^[0-9.]+$/, { message: 'The code must contain only numbers and dots.' })
      code: string;
 
      @ApiProperty({
@@ -17,20 +16,28 @@ export class CreateAccountingPlanDto {
           example: 'Activo',
      })
      @IsString()
-     @Length(2, 100, { message: 'El nombre debe tener entre 2 y 100 caracteres' })
      name: string;
 
      @ApiProperty({
-          description: 'The name of the company',
-          example: 'UDLA',
+          description: 'The level of the accounting plan',
+          example: '1, 2, 3, etc',
      })
-     
-     @IsString()
-     @IsOptional()
-     readonly company_code: string;
+     @IsNumber({}, { message: 'Level must be a number' })
+     level: number;
 
+     @ApiPropertyOptional({
+          description: 'The ID of the parent accounting plan (if any)',
+          example: '1, 1.1, 1.1.1',
+     })
      @IsOptional()
-     @IsNumber()
-     parentId?: number;
-     
+     @Matches(/^[0-9.]+$/, { message: 'Parent ID must contain only numbers and dots.' })
+     parent_id?: string;
+
+     // @ApiProperty({
+     //      description: 'The name of the company',
+     //      example: 'UDLA',
+     // })   
+     // @IsString()
+     // @IsOptional()
+     // company_code: string;
 }

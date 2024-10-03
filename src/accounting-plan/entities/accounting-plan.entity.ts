@@ -1,29 +1,21 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent } from "typeorm";
-
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 @Entity({ name: 'accounting_plan' })
-@Tree("closure-table")
 export class AccountingPlan {
 
      @PrimaryGeneratedColumn()
      id: number;
 
+     @Column({ unique: true })
+     code: string;
+
      @Column({ nullable: false }) 
      name: string;
 
-     @Column({unique: true, nullable: false})
-     code: string;
+     @Column({ default: 0 })
+     level: number;
 
-     @TreeChildren()
-     children: AccountingPlan[];
-
-     @TreeParent()
-     parent: AccountingPlan;
-
-     @Column({ unique: true, nullable: true, default: null }) 
-     company_code: string;
-
-     @CreateDateColumn({ name: 'created_at' })
-     createdAt: Date;
+     @Column({ nullable: true })
+     parent_id: string;
 
 }
 
