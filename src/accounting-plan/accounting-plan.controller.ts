@@ -13,9 +13,12 @@ export class AccountingPlanController {
 
   @Get()
   @ApiResponse({ status: 200, description: 'Get all accounts successfully.' })
-  async findAll(): Promise<AccountingPlan[]> {
-    return this.accountingPlanService.findAll();
+  async findAll(@Query('offset') offset: number = 0, @Query('take') take: number = 10): Promise<AccountingPlan[]> {
+    return this.accountingPlanService.findAll(offset, take);
   }
+  // async findAll(): Promise<AccountingPlan[]> {
+  //   return this.accountingPlanService.findAll();
+  // }
   
   @Post()
   @ApiResponse({ status: 201, description: 'Account created successfully.' })

@@ -15,8 +15,25 @@ export class AccountingPlanService {
       private accountRepository: Repository<AccountingPlan>,
   ) { }
 
-  async findAll(): Promise<AccountingPlan[]> {
-    return await this.accountRepository.find();
+  async findAll(offset: number, take: number): Promise<AccountingPlan[]> {
+    const accounts =  await this.accountRepository.find({
+      skip: offset,
+      take,
+    });
+
+    const sortedAccounts = [...accounts].sort((a, b) => {
+      const aParts = a.code.split('.').map(Number);  // Convertir cada parte del código a número
+      const bParts = b.code.split('.').map(Number);
+  
+      for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+        if (aParts[i] !== bParts[i]) {
+          return (aParts[i] || 0) - (bParts[i] || 0);  // Comparar parte por parte
+        }
+      }
+      return 0;
+    });
+
+    return sortedAccounts;
 }
 
 
