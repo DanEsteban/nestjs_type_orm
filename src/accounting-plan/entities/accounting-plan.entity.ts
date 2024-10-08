@@ -1,4 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+
 @Entity({ name: 'accounting_plan' })
 export class AccountingPlan {
 
@@ -15,7 +16,7 @@ export class AccountingPlan {
      level: number;
 
      @Column({ nullable: true })
-     parent_id: string;
+     parent_code: string;
 
 }
 

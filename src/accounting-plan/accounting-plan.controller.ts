@@ -16,7 +16,7 @@ export class AccountingPlanController {
   async findAll(): Promise<AccountingPlan[]> {
     return this.accountingPlanService.findAll();
   }
-
+  
   @Post()
   @ApiResponse({ status: 201, description: 'Account created successfully.' })
   @ApiResponse({ status: 400, description: 'Validation failed.' })
@@ -25,31 +25,14 @@ export class AccountingPlanController {
     return this.accountingPlanService.create(createAccountDto);
   }
 
-  // @Get(':id')
-  // async findOne(@Param('id') id: number) {
-  //   return this.accountingPlanService.findOne(id);
-  // }
-
-  // @Put(':id')
-  // @ApiResponse({ status: 200, description: 'Account updated successfully.' })
-  // @ApiResponse({ status: 404, description: 'Account not found.' })
-  // @ApiResponse({ status: 400, description: 'Validation failed.' })
-  // @ApiResponse({ status: 409, description: 'Account with this code already exists.' })
-  // async update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
-  //   const updatedAccount = await this.accountingPlanService.update(id, updateAccountDto);
-  //   if (!updatedAccount) {
-  //     throw new NotFoundException(`Account with ID ${id} not found.`);
-  //   }
-  //   return updatedAccount;
-  // }
-
-  // @Delete(':id')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @ApiResponse({ status: 204, description: 'Account deleted successfully.' })
-  // @ApiResponse({ status: 404, description: 'Account not found.' })
-  // async delete(@Param('id') id: number) {
-  //   return this.accountingPlanService.delete(id);
-  // }
+  @Put(':id')
+  @ApiResponse({ status: 200, description: 'Account updated successfully.' })
+  async update(
+    @Param('id') id: number,
+    @Body() updateAccountDto: Partial<AccountingPlan>,
+  ): Promise<AccountingPlan> {
+    return this.accountingPlanService.update(id, updateAccountDto);
+  }
 
 }
 

@@ -25,7 +25,7 @@ export class UpdateAccountDto extends PartialType(CreateAccountDto) {
           description: 'The ID of the parent accounting plan (optional)',
           example: '1.1',
      })
-     parent_id?: string;
+     parent_code?: string;
 }
 
 

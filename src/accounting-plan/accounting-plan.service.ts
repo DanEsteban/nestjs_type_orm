@@ -15,24 +15,24 @@ export class AccountingPlanService {
       private accountRepository: Repository<AccountingPlan>,
   ) { }
 
-  // async findAll(paginationDto: PaginationDto): Promise<{ data: AccountingPlan[]; total: number; page: number; limit: number }> {
-  //   const { page, limit } = paginationDto;
-  //   const [data, total] = await this.accountRepository.findAndCount({
-  //     relations: ['parent', 'children'],
-  //     skip: (page - 1) * limit,
-  //     take: limit,
-  //   });
-  //   return { data, total, page, limit };
-  // }
-
   async findAll(): Promise<AccountingPlan[]> {
-    return this.accountRepository.find();
-  }
+    return await this.accountRepository.find();
+}
 
-  async create(accountDto: CreateAccountDto): Promise<AccountingPlan> {
-    const newAccount = this.accountRepository.create(accountDto); // Creamos la nueva cuenta desde el DTO
-    return this.accountRepository.save(newAccount); // Guardamos la nueva cuenta
+
+async create(accountDto: CreateAccountDto): Promise<AccountingPlan> {
+  const newAccount = this.accountRepository.create(accountDto);
+  return this.accountRepository.save(newAccount);
+}
+
+async update(id: number, updateAccountDto: Partial<AccountingPlan>): Promise<AccountingPlan> {
+  const account = await this.accountRepository.findOne({ where: { id } });
+  if (!account) {
+    throw new NotFoundException(`Account with id ${id} not found`);
   }
+  const updatedAccount = Object.assign(account, updateAccountDto);
+  return this.accountRepository.save(updatedAccount);
+}
 
 }
 

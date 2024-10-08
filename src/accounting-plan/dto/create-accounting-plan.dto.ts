@@ -30,14 +30,7 @@ export class CreateAccountDto {
           example: '1, 1.1, 1.1.1',
      })
      @IsOptional()
-     @Matches(/^[0-9.]+$/, { message: 'Parent ID must contain only numbers and dots.' })
-     parent_id?: string;
+     @Matches(/^[0-9.]+$/, { message: 'Parent Code must contain only numbers and dots.' })
+     parent_code?: string;
 
-     // @ApiProperty({
-     //      description: 'The name of the company',
-     //      example: 'UDLA',
-     // })   
-     // @IsString()
-     // @IsOptional()
-     // company_code: string;
 }
