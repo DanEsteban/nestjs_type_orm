@@ -11,12 +11,12 @@ import { PaginationDto } from './dto/pagination.dto';
 export class AccountingPlanService {
 
   constructor(
-      @InjectRepository(AccountingPlan)
-      private accountRepository: Repository<AccountingPlan>,
+    @InjectRepository(AccountingPlan)
+    private accountRepository: Repository<AccountingPlan>,
   ) { }
 
   async findAll(offset: number, take: number): Promise<AccountingPlan[]> {
-    const accounts =  await this.accountRepository.find({
+    const accounts = await this.accountRepository.find({
       skip: offset,
       take,
     });
@@ -24,7 +24,7 @@ export class AccountingPlanService {
     const sortedAccounts = [...accounts].sort((a, b) => {
       const aParts = a.code.split('.').map(Number);  // Convertir cada parte del código a número
       const bParts = b.code.split('.').map(Number);
-  
+
       for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
         if (aParts[i] !== bParts[i]) {
           return (aParts[i] || 0) - (bParts[i] || 0);  // Comparar parte por parte
@@ -34,22 +34,38 @@ export class AccountingPlanService {
     });
 
     return sortedAccounts;
-}
-
-
-async create(accountDto: CreateAccountDto): Promise<AccountingPlan> {
-  const newAccount = this.accountRepository.create(accountDto);
-  return this.accountRepository.save(newAccount);
-}
-
-async update(id: number, updateAccountDto: Partial<AccountingPlan>): Promise<AccountingPlan> {
-  const account = await this.accountRepository.findOne({ where: { id } });
-  if (!account) {
-    throw new NotFoundException(`Account with id ${id} not found`);
   }
-  const updatedAccount = Object.assign(account, updateAccountDto);
-  return this.accountRepository.save(updatedAccount);
-}
+
+
+  async create(createAccountDto: CreateAccountDto): Promise<AccountingPlan> {
+
+    const { code } = createAccountDto;
+    const existingAccount = await this.accountRepository.findOne({ where: { code } });
+    if (existingAccount) {
+      throw new ConflictException(`Ya existe una cuenta con el código ${code}`);
+    }
+
+    const newAccount = this.accountRepository.create(createAccountDto);
+    return this.accountRepository.save(newAccount);
+  }
+
+  async update(id: number, updateAccountDto: Partial<AccountingPlan>): Promise<AccountingPlan> {
+    await this.accountRepository.update(id, updateAccountDto);
+    const updatedAccount = await this.accountRepository.findOne({ where: { id } });
+    if (!updatedAccount) {
+      throw new NotFoundException('Account not found');
+    }
+    return updatedAccount;
+  }
+
+  async delete(id: number): Promise<void> {
+    const result = await this.accountRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Account not found');
+    }
+  }
+
+
 
 }
 

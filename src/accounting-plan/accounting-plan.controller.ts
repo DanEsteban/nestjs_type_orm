@@ -37,5 +37,13 @@ export class AccountingPlanController {
     return this.accountingPlanService.update(id, updateAccountDto);
   }
 
+  @Delete(':id')
+  @ApiResponse({ status: 200, description: 'Account deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'Account not found.' })
+  async delete(@Param('id') id: number): Promise<void> {
+    return this.accountingPlanService.delete(id);
+  }
+
+
 }
 
