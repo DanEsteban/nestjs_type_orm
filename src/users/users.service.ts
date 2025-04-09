@@ -139,7 +139,6 @@ export class UsersService {
      }
 
      async createByEmpresa(empresaId: number, createUserDto: CreateUserDto, currentUser: Usuario) {
-          //console.log(currentUser);
           if (currentUser.systemRole !== SystemRole.SUPERADMIN) {
                const acceso = await this.usuarioEmpresaRepository.findOne({
                     where: {
@@ -163,7 +162,6 @@ export class UsersService {
                systemRole: currentUser.systemRole === SystemRole.SUPERADMIN ? SystemRole.USER : SystemRole.USER, // Siempre USER si no es SUPERADMIN
                createdBy: { id: currentUser.id }, // Agregar relación sin modificar el DTO
           });
-
 
           // Guardar usuario en la base de datos
           const savedUser = await this.usuarioRepository.save(nuevoUsuario);

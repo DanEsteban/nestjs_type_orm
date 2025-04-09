@@ -653,7 +653,7 @@ export class ReportesService {
         startDate?: Date,
         initialAccount?: string,
         finalAccount?: string,
-    ): Promise<Record<string, number>> {
+    ): Promise<Record<string, { debe: number, haber: number }>> {
 
         if (!startDate) return {};
 
@@ -679,30 +679,39 @@ export class ReportesService {
 
         const resultados = await query.getRawMany();
 
-        const saldos: Record<string, number> = {};
+        const saldos: Record<string, { debe: number, haber: number }> = {};
         for (const row of resultados) {
             const cuenta = row.cuenta;
             const debe = parseFloat(row.totalDebe || 0);
             const haber = parseFloat(row.totalHaber || 0);
-            saldos[cuenta] = debe - haber;
+            saldos[cuenta] = { debe, haber };
         }
         return saldos;
     }
 
     private groupByCuenta(
         items: AsientoItem[],
-        saldoAnteriorPorCuenta: Record<string, number> = {},
+        saldoAnteriorPorCuenta: Record<string, { debe: number, haber: number }> = {},
     ) {
         const resultado = {};
 
         for (const item of items) {
             const cuentaClave = `${item.cta} ${item.cta_nombre}`;
             if (!resultado[cuentaClave]) {
-                const saldoInicial = saldoAnteriorPorCuenta[item.cta] || 0;
+                const saldoAnterior = saldoAnteriorPorCuenta[item.cta] || { debe: 0, haber: 0 };
+                let saldoInicialCalculado = saldoAnterior.debe - saldoAnterior.haber;
+                let tipoSaldoInicial: 'DEUDOR' | 'ACREEDOR' = 'DEUDOR';
+
+                if (saldoInicialCalculado < 0) {
+                    saldoInicialCalculado = Math.abs(saldoInicialCalculado);
+                    tipoSaldoInicial = 'ACREEDOR';
+                }
+
                 resultado[cuentaClave] = {
                     cuenta: cuentaClave,
                     movimientos: [],
-                    saldoInicial,
+                    saldoInicial: saldoInicialCalculado,
+                    tipoSaldoInicial,
                 };
             }
 
@@ -721,17 +730,19 @@ export class ReportesService {
 
         // Calcular saldo acumulado
         for (const cuenta in resultado) {
-            let saldo = resultado[cuenta].saldoInicial;
-            resultado[cuenta].movimientos = resultado[cuenta].movimientos.map(
-                (m) => {
-                    saldo += m.debe - m.haber;
-                    return { ...m, saldo };
-                },
-            );
+            let saldo = resultado[cuenta].tipoSaldoInicial === 'DEUDOR'
+                ? resultado[cuenta].saldoInicial
+                : -resultado[cuenta].saldoInicial;
+
+            resultado[cuenta].movimientos = resultado[cuenta].movimientos.map((m) => {
+                saldo += m.debe - m.haber;
+                return { ...m, saldo };
+            });
         }
 
         return Object.values(resultado); // Devuelve array de cuentas con sus movimientos
     }
+
 
     async getBalanceComprobacion(
         empresaId: number,
@@ -778,6 +789,7 @@ export class ReportesService {
             );
         }
 
+
         // 1. Obtener SALDO ANTERIOR (suma de todos los movimientos hasta 1 día antes de startDate)
         const saldoAnteriorEntries = await this.accountingEntryRepository.find({
             where: {
@@ -798,6 +810,7 @@ export class ReportesService {
             relations: ['lineItems'],
         });
 
+
         // Inicializar estructura para almacenar valores
         const accountValues: Record<string, {
             saldoAnteriorDebe: number;
@@ -806,6 +819,7 @@ export class ReportesService {
             movimientosHaber: number;
             tipoCuenta: 'activo' | 'pasivo' | 'patrimonio' | 'ingreso' | 'gasto';
         }> = {};
+
 
         // Clasificar cuentas y inicializar valores
         filteredAccounts.forEach(account => {
@@ -830,6 +844,7 @@ export class ReportesService {
             });
         });
 
+
         // Procesar MOVIMIENTOS
         movimientosEntries.forEach(entry => {
             entry.lineItems.forEach(item => {
@@ -840,6 +855,7 @@ export class ReportesService {
             });
         });
 
+
         // Calcular SALDOS según tipo de cuenta
         const reportItems = [];
         let totalSaldoAnteriorDebe = 0;
@@ -849,19 +865,23 @@ export class ReportesService {
         let totalSaldosDebe = 0;
         let totalSaldosHaber = 0;
 
+
         filteredAccounts.forEach(account => {
             const values = accountValues[account.code];
             const tipo = values.tipoCuenta;
 
+
             // Calcular saldos según tipo de cuenta
             let saldoDebe = 0;
             let saldoHaber = 0;
+
 
             if (tipo === 'activo' || tipo === 'gasto') {
                 // Para activos y gastos: (saldo anterior - haber + debe)
                 const saldoAnterior = values.saldoAnteriorDebe - values.saldoAnteriorHaber;
                 const saldoMovimientos = -values.movimientosHaber + values.movimientosDebe;
                 const saldoFinal = saldoAnterior + saldoMovimientos;
+
 
                 if (saldoFinal > 0) {
                     saldoDebe = saldoFinal;
@@ -873,6 +893,7 @@ export class ReportesService {
                 const saldoAnterior = values.saldoAnteriorHaber - values.saldoAnteriorDebe;
                 const saldoMovimientos = values.movimientosHaber - values.movimientosDebe;
                 const saldoFinal = saldoAnterior + saldoMovimientos;
+
 
                 if (saldoFinal > 0) {
                     saldoHaber = saldoFinal;
@@ -910,6 +931,7 @@ export class ReportesService {
             }
         });
 
+
         return {
             report: reportItems,
             startDate: formatFromDate,
@@ -927,6 +949,7 @@ export class ReportesService {
             diferenciaSaldos: totalSaldosDebe - totalSaldosHaber
         };
     }
+
 
     private clasificarTipoCuenta(codigo: string): 'activo' | 'pasivo' | 'patrimonio' | 'ingreso' | 'gasto' {
         if (codigo.startsWith('1')) return 'activo';

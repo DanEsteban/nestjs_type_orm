@@ -1,6 +1,11 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+     Column,
+     CreateDateColumn,
+     Entity,
+     PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity({ name: "login-history" })
+@Entity({ name: 'login-history' })
 export class LoginHistory {
      @PrimaryGeneratedColumn()
      id: number;
@@ -20,7 +25,12 @@ export class LoginHistory {
      @Column()
      userName: string;
 
+     @Column({ nullable: true })
+     location: string;
+
+     @Column({ nullable: true })
+     deviceType: string;
+
      @CreateDateColumn({ type: 'timestamp' })
      timestamp: Date;
-
 }
